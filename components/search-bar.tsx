@@ -18,7 +18,7 @@ interface SearchBarProps {
 export default function SearchBar({
   value,
   onChangeText,
-  placeholder = "Search products...",
+  placeholder = "Cari produk...",
 }: SearchBarProps) {
   const [isFocused, setIsFocused] = useState(false);
 

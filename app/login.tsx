@@ -11,6 +11,7 @@ import {
 import CustomButton from "@/components/custom-button";
 import CustomInput from "@/components/custom-input";
 import { Colors } from "@/constants/colors";
+import { useSession } from "@/hooks/useSession";
 import { router } from "expo-router";
 
 interface LoginErrors {
@@ -20,21 +21,21 @@ interface LoginErrors {
 
 function validateEmail(email: string): string {
   if (!email.trim()) {
-    return "Email is required";
+    return "Email wajib diisi";
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email.trim())) {
-    return "Invalid email format";
+    return "Format email tidak valid";
   }
   return "";
 }
 
 function validatePassword(password: string): string {
   if (!password) {
-    return "Password is required";
+    return "Kata sandi wajib diisi";
   }
   if (password.length < 8) {
-    return "Password must be at least 8 characters";
+    return "Kata sandi minimal 8 karakter";
   }
   return "";
 }
@@ -52,6 +53,7 @@ function isFormValid(email: string, password: string): boolean {
 }
 
 export default function LoginScreen() {
+  const { saveSession } = useSession();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginErrors>({
@@ -74,22 +76,16 @@ export default function LoginScreen() {
     }
   };
 
-  const handleEmailBlur = () => {
-    setTouched((prev) => ({ ...prev, email: true }));
-    setErrors((prev) => ({ ...prev, email: validateEmail(email) }));
-  };
-
-  const handlePasswordBlur = () => {
-    setTouched((prev) => ({ ...prev, password: true }));
-    setErrors((prev) => ({ ...prev, password: validatePassword(password) }));
-  };
-
   const handleLogin = () => {
     const validationErrors = validateForm(email, password);
     setErrors(validationErrors);
     setTouched({ email: true, password: true });
 
     if (!validationErrors.email && !validationErrors.password) {
+      saveSession({
+        fullName: email.split("@")[0],
+        email: email.trim(),
+      });
       router.replace("/(tabs)");
     }
   };
@@ -110,9 +106,9 @@ export default function LoginScreen() {
           <View style={styles.logoPlaceholder}>
             <Text style={styles.logoText}>KM</Text>
           </View>
-          <Text style={styles.welcomeTitle}>Welcome Back</Text>
+          <Text style={styles.welcomeTitle}>Selamat Datang</Text>
           <Text style={styles.welcomeSubtitle}>
-            Sign in to continue shopping
+            Masuk untuk melanjutkan belanja
           </Text>
         </View>
 
@@ -121,30 +117,30 @@ export default function LoginScreen() {
             label="Email"
             value={email}
             onChangeText={handleEmailChange}
-            placeholder="Enter your email"
+            placeholder="Masukkan email"
             keyboardType="email-address"
             autoCapitalize="none"
             error={touched.email ? errors.email : undefined}
           />
 
           <CustomInput
-            label="Password"
+            label="Kata Sandi"
             value={password}
             onChangeText={handlePasswordChange}
-            placeholder="Enter your password"
+            placeholder="Masukkan kata sandi"
             secureTextEntry
             showToggle
             error={touched.password ? errors.password : undefined}
           />
 
           <CustomButton
-            title="Login"
+            title="Masuk"
             onPress={handleLogin}
             disabled={!formValid}
           />
 
           <CustomButton
-            title="Don't have an account? Register"
+            title="Belum punya akun? Daftar"
             onPress={() => router.push("/register")}
             variant="link"
             style={styles.linkButton}

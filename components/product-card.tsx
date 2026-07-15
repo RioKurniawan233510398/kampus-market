@@ -2,7 +2,10 @@ import { Image } from "expo-image";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 import { Colors } from "@/constants/colors";
+import { useWishlist } from "@/hooks/useWishlist";
 import type { Product } from "@/services/products";
+import { formatPrice } from "@/utils/format";
+import WishlistButton from "./wishlist-button";
 
 interface ProductCardProps {
   product: Product;
@@ -10,8 +13,25 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onPress }: ProductCardProps) {
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const isLowStock = product.stock > 0 && product.stock <= 10;
   const isOutOfStock = product.stock === 0;
+
+  const handleToggleWishlist = () => {
+    toggleWishlist({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      rating: product.rating,
+      category: product.category,
+      thumbnail: product.thumbnail,
+      images: product.images,
+      discountPercentage: product.discountPercentage,
+      brand: product.brand,
+      stock: product.stock,
+      description: product.description,
+    });
+  };
 
   return (
     <TouchableOpacity
@@ -19,12 +39,20 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
       onPress={() => onPress(product.id)}
       activeOpacity={0.7}
     >
-      <Image
-        source={{ uri: product.thumbnail }}
-        style={styles.image}
-        contentFit="cover"
-        transition={200}
-      />
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: product.thumbnail }}
+          style={styles.image}
+          contentFit="cover"
+          transition={200}
+        />
+        <View style={styles.wishlistOverlay}>
+          <WishlistButton
+            isInWishlist={isInWishlist(product.id)}
+            onToggle={handleToggleWishlist}
+          />
+        </View>
+      </View>
       <View style={styles.content}>
         <Text style={styles.category}>{product.category}</Text>
         <Text style={styles.title} numberOfLines={2}>
@@ -35,7 +63,7 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
         </Text>
 
         <View style={styles.bottomRow}>
-          <Text style={styles.price}>${product.price.toFixed(2)}</Text>
+          <Text style={styles.price}>{formatPrice(product.price)}</Text>
           <View style={styles.ratingBadge}>
             <Text style={styles.ratingText}>★ {product.rating.toFixed(1)}</Text>
           </View>
@@ -43,11 +71,11 @@ export default function ProductCard({ product, onPress }: ProductCardProps) {
 
         <View style={styles.stockRow}>
           {isOutOfStock ? (
-            <Text style={styles.outOfStock}>Out of Stock</Text>
+            <Text style={styles.outOfStock}>Stok Habis</Text>
           ) : isLowStock ? (
-            <Text style={styles.lowStock}>Only {product.stock} left</Text>
+            <Text style={styles.lowStock}>Sisa {product.stock}</Text>
           ) : (
-            <Text style={styles.inStock}>In Stock</Text>
+            <Text style={styles.inStock}>Tersedia</Text>
           )}
         </View>
       </View>
@@ -68,10 +96,18 @@ const styles = StyleSheet.create({
     elevation: 4,
     overflow: "hidden",
   },
+  imageContainer: {
+    position: "relative",
+  },
   image: {
     width: "100%",
     height: 200,
     backgroundColor: "#f3f4f6",
+  },
+  wishlistOverlay: {
+    position: "absolute",
+    top: 10,
+    right: 10,
   },
   content: {
     padding: 16,

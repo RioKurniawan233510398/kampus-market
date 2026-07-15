@@ -16,6 +16,7 @@ import { Colors } from "@/constants/colors";
 import {
   fetchCategories,
   fetchProducts,
+  type Category,
   type Product,
 } from "@/services/products";
 import { router } from "expo-router";
@@ -24,11 +25,11 @@ type ScreenState = "loading" | "error" | "empty" | "success";
 
 export default function HomeScreen() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [screenState, setScreenState] = useState<ScreenState>("loading");
   const [refreshing, setRefreshing] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [loadingCategories, setLoadingCategories] = useState(true);
 
   const loadProducts = useCallback(async () => {
@@ -91,7 +92,7 @@ export default function HomeScreen() {
     let result = products;
 
     // Filter by category
-    if (selectedCategory !== "All") {
+    if (selectedCategory !== "Semua") {
       result = result.filter(
         (product) =>
           product.category.toLowerCase() === selectedCategory.toLowerCase(),
@@ -118,13 +119,16 @@ export default function HomeScreen() {
 
   const keyExtractor = useCallback((item: Product) => item.id.toString(), []);
 
-  const allCategories = useMemo(() => ["All", ...categories], [categories]);
+  const allCategories = useMemo(
+    () => ["Semua", ...categories.map((c) => c.name)],
+    [categories],
+  );
 
   if (screenState === "loading") {
     return (
       <View style={styles.centeredContainer}>
         <ActivityIndicator size="large" color={Colors.primary} />
-        <Text style={styles.loadingText}>Loading products...</Text>
+        <Text style={styles.loadingText}>Memuat produk...</Text>
       </View>
     );
   }
@@ -133,16 +137,16 @@ export default function HomeScreen() {
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.errorIcon}>⚠️</Text>
-        <Text style={styles.errorTitle}>Something went wrong</Text>
+        <Text style={styles.errorTitle}>Terjadi Kesalahan</Text>
         <Text style={styles.errorMessage}>
-          We could not load the products. Please try again.
+          Gagal memuat produk. Silakan coba lagi.
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={loadProducts}
           activeOpacity={0.8}
         >
-          <Text style={styles.retryText}>Retry</Text>
+          <Text style={styles.retryText}>Coba Lagi</Text>
         </TouchableOpacity>
       </View>
     );
@@ -152,16 +156,16 @@ export default function HomeScreen() {
     return (
       <View style={styles.centeredContainer}>
         <Text style={styles.emptyIcon}>📦</Text>
-        <Text style={styles.emptyTitle}>No products available</Text>
+        <Text style={styles.emptyTitle}>Belum Ada Produk</Text>
         <Text style={styles.emptyMessage}>
-          Check back later for new arrivals.
+          Belum ada produk tersedia. Silakan periksa kembali nanti.
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={loadProducts}
           activeOpacity={0.8}
         >
-          <Text style={styles.retryText}>Refresh</Text>
+          <Text style={styles.retryText}>Muat Ulang</Text>
         </TouchableOpacity>
       </View>
     );
@@ -171,12 +175,16 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Hello there 👋</Text>
-          <Text style={styles.welcomeTitle}>Find your favorite products</Text>
+          <Text style={styles.greeting}>Halo 👋</Text>
+          <Text style={styles.welcomeTitle}>Temukan produk favoritmu</Text>
         </View>
       </View>
 
-      <SearchBar value={searchText} onChangeText={setSearchText} />
+      <SearchBar
+        value={searchText}
+        onChangeText={setSearchText}
+        placeholder="Cari produk..."
+      />
 
       <View style={styles.categoriesSection}>
         {loadingCategories ? (
@@ -221,9 +229,9 @@ export default function HomeScreen() {
       {filteredProducts.length === 0 ? (
         <View style={styles.noResults}>
           <Text style={styles.noResultsIcon}>🔍</Text>
-          <Text style={styles.noResultsTitle}>No products found</Text>
+          <Text style={styles.noResultsTitle}>Produk Tidak Ditemukan</Text>
           <Text style={styles.noResultsMessage}>
-            Try adjusting your search or filter.
+            Coba sesuaikan pencarian atau filter kamu.
           </Text>
         </View>
       ) : (

@@ -11,6 +11,7 @@ import {
 import CustomButton from "@/components/custom-button";
 import CustomInput from "@/components/custom-input";
 import { Colors } from "@/constants/colors";
+import { useSession } from "@/hooks/useSession";
 import { router } from "expo-router";
 
 interface RegisterErrors {
@@ -22,31 +23,31 @@ interface RegisterErrors {
 
 function validateFullName(name: string): string {
   if (!name.trim()) {
-    return "Full name is required";
+    return "Nama lengkap wajib diisi";
   }
   if (name.trim().length < 3) {
-    return "Full name must be at least 3 characters";
+    return "Nama lengkap minimal 3 karakter";
   }
   return "";
 }
 
 function validateEmail(email: string): string {
   if (!email.trim()) {
-    return "Email is required";
+    return "Email wajib diisi";
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email.trim())) {
-    return "Invalid email format";
+    return "Format email tidak valid";
   }
   return "";
 }
 
 function validatePassword(password: string): string {
   if (!password) {
-    return "Password is required";
+    return "Kata sandi wajib diisi";
   }
   if (password.length < 8) {
-    return "Password must be at least 8 characters";
+    return "Kata sandi minimal 8 karakter";
   }
   return "";
 }
@@ -56,10 +57,10 @@ function validateConfirmPassword(
   confirmPassword: string,
 ): string {
   if (!confirmPassword) {
-    return "Please confirm your password";
+    return "Harap konfirmasi kata sandi";
   }
   if (password !== confirmPassword) {
-    return "Passwords do not match";
+    return "Kata sandi tidak cocok";
   }
   return "";
 }
@@ -94,6 +95,7 @@ function isFormValid(
 }
 
 export default function RegisterScreen() {
+  const { saveSession } = useSession();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -142,29 +144,6 @@ export default function RegisterScreen() {
     }
   };
 
-  const handleFullNameBlur = () => {
-    setTouched((prev) => ({ ...prev, fullName: true }));
-    setErrors((prev) => ({ ...prev, fullName: validateFullName(fullName) }));
-  };
-
-  const handleEmailBlur = () => {
-    setTouched((prev) => ({ ...prev, email: true }));
-    setErrors((prev) => ({ ...prev, email: validateEmail(email) }));
-  };
-
-  const handlePasswordBlur = () => {
-    setTouched((prev) => ({ ...prev, password: true }));
-    setErrors((prev) => ({ ...prev, password: validatePassword(password) }));
-  };
-
-  const handleConfirmPasswordBlur = () => {
-    setTouched((prev) => ({ ...prev, confirmPassword: true }));
-    setErrors((prev) => ({
-      ...prev,
-      confirmPassword: validateConfirmPassword(password, confirmPassword),
-    }));
-  };
-
   const handleRegister = () => {
     const validationErrors = validateForm(
       fullName,
@@ -187,7 +166,11 @@ export default function RegisterScreen() {
       !validationErrors.confirmPassword;
 
     if (hasNoErrors) {
-      router.push("/login");
+      saveSession({
+        fullName: fullName.trim(),
+        email: email.trim(),
+      });
+      router.replace("/(tabs)");
     }
   };
 
@@ -207,16 +190,18 @@ export default function RegisterScreen() {
           <View style={styles.logoPlaceholder}>
             <Text style={styles.logoText}>KM</Text>
           </View>
-          <Text style={styles.welcomeTitle}>Create Account</Text>
-          <Text style={styles.welcomeSubtitle}>Join us and start shopping</Text>
+          <Text style={styles.welcomeTitle}>Buat Akun</Text>
+          <Text style={styles.welcomeSubtitle}>
+            Bergabung dan mulai belanja
+          </Text>
         </View>
 
         <View style={styles.form}>
           <CustomInput
-            label="Full Name"
+            label="Nama Lengkap"
             value={fullName}
             onChangeText={handleFullNameChange}
-            placeholder="Enter your full name"
+            placeholder="Masukkan nama lengkap"
             autoCapitalize="words"
             error={touched.fullName ? errors.fullName : undefined}
           />
@@ -225,40 +210,40 @@ export default function RegisterScreen() {
             label="Email"
             value={email}
             onChangeText={handleEmailChange}
-            placeholder="Enter your email"
+            placeholder="Masukkan email"
             keyboardType="email-address"
             autoCapitalize="none"
             error={touched.email ? errors.email : undefined}
           />
 
           <CustomInput
-            label="Password"
+            label="Kata Sandi"
             value={password}
             onChangeText={handlePasswordChange}
-            placeholder="Enter your password"
+            placeholder="Masukkan kata sandi"
             secureTextEntry
             showToggle
             error={touched.password ? errors.password : undefined}
           />
 
           <CustomInput
-            label="Confirm Password"
+            label="Konfirmasi Kata Sandi"
             value={confirmPassword}
             onChangeText={handleConfirmPasswordChange}
-            placeholder="Confirm your password"
+            placeholder="Konfirmasi kata sandi"
             secureTextEntry
             showToggle
             error={touched.confirmPassword ? errors.confirmPassword : undefined}
           />
 
           <CustomButton
-            title="Register"
+            title="Daftar"
             onPress={handleRegister}
             disabled={!formValid}
           />
 
           <CustomButton
-            title="Already have an account? Login"
+            title="Sudah punya akun? Masuk"
             onPress={() => router.push("/login")}
             variant="link"
             style={styles.linkButton}

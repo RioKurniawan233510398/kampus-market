@@ -6,8 +6,10 @@ export interface Product {
   description: string;
   category: string;
   price: number;
+  discountPercentage: number;
   rating: number;
   stock: number;
+  brand?: string;
   thumbnail: string;
   images: string[];
 }
@@ -19,12 +21,18 @@ export interface ProductsResponse {
   limit: number;
 }
 
+export interface Category {
+  slug: string;
+  name: string;
+  url: string;
+}
+
 export async function fetchProducts(): Promise<ProductsResponse> {
   const response = await api.get<ProductsResponse>("/products");
   return response.data;
 }
 
-export async function fetchCategories(): Promise<string[]> {
-  const response = await api.get<string[]>("/products/categories");
+export async function fetchCategories(): Promise<Category[]> {
+  const response = await api.get<Category[]>("/products/categories");
   return response.data;
 }
